@@ -1,0 +1,11 @@
+PRADHAN MANTRI KISAN SAMMAN NIDHI (PM-KISAN) OPERATIONAL GUIDELINES
+Ministry of Agriculture & Farmers Welfare, Government of India
+
+Chapter III, Section 8.1: Land Record & Aadhaar Name Matching
+Direct Benefit Transfer (DBT) installment disbursements require an exact match between the beneficiary name recorded in the State Land Registry (e.g. MahaBhulekh 7/12 Extract) and the UIDAI Aadhaar vault name.
+
+Chapter III, Section 8.2: Initial Discrepancies & eKYC Holds
+In cases where land record title uses legal initials (e.g. Rameshwar B. Patil) while Aadhaar contains full middle name (e.g. Rameshwar Bapurao Patil), automated eKYC verification will mark the record as VERIFICATION_FAILURE or DATA_MISMATCH.
+
+Chapter III, Section 8.3: Form-8A Land Name Reconciliation Procedure
+Farmers facing land-seeding holds due to initial/spelling variations must submit a Form-8A Land Name Linkage Certificate issued by the Circle Revenue Officer (Talathi / Patwari). Uploading Form-8A on the PM-KISAN Farmers Corner portal triggers automated DBT unfreezing within 48 hours.

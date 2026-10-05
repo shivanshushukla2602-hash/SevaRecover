@@ -1,0 +1,278 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  SevaRecover - AWS Build It Track Infrastructure
+  Strands Agents SDK + Amazon OpenSearch + Cedar Authorization
+
+Parameters:
+  SenderEmail:
+    Type: String
+    Description: Verified SES email address for sending OTPs
+    Default: "no-reply@sevarecover.in"
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: python3.11
+    Environment:
+      Variables:
+        OPENSEARCH_ENDPOINT: !GetAtt OpenSearchDomain.DomainEndpoint
+        CEDAR_POLICY_STORE_ID: !Ref CedarPolicyStore
+        USER_POOL_CLIENT_ID: !Ref UserPoolClient
+        USER_POOL_ID: !Ref UserPool
+        CITIZENS_TABLE: !Ref CitizensTable
+        APPLICATIONS_TABLE: !Ref ApplicationsTable
+  Api:
+    Auth:
+      Authorizers:
+        CognitoAuthorizer:
+          UserPoolArn: !GetAtt UserPool.Arn
+
+Resources:
+  # OpenSearch Knowledge Base Domain for Authoritative Document Search
+  OpenSearchDomain:
+    Type: AWS::OpenSearchService::Domain
+    Properties:
+      DomainName: sevarecover-kb
+      EngineVersion: OpenSearch_2.11
+      ClusterConfig:
+        InstanceType: t3.small.search
+        InstanceCount: 1
+      EBSOptions:
+        EBSEnabled: true
+        VolumeSize: 10
+        VolumeType: gp3
+
+  # Cedar Authorization Policy Store
+  CedarPolicyStore:
+    Type: AWS::VerifiedPermissions::PolicyStore
+    Properties:
+      ValidationSettings:
+        Mode: STRICT
+
+  # Cedar Citizen Policy
+  CitizenRolePolicy:
+    Type: AWS::VerifiedPermissions::Policy
+    Properties:
+      PolicyStoreId: !Ref CedarPolicyStore
+      Definition:
+        Static:
+          Statement: >
+            permit (
+              principal in SevaRecover::Role::"CITIZEN",
+              action in [
+                SevaRecover::Action::"CreateAnalysis",
+                SevaRecover::Action::"UploadEvidence",
+                SevaRecover::Action::"ViewOwnAnalysis"
+              ],
+              resource
+            );
+
+  # Cedar Auditor Policy
+  AuditorRolePolicy:
+    Type: AWS::VerifiedPermissions::Policy
+    Properties:
+      PolicyStoreId: !Ref CedarPolicyStore
+      Definition:
+        Static:
+          Statement: >
+            permit (
+              principal in SevaRecover::Role::"AUDITOR",
+              action in [
+                SevaRecover::Action::"InspectReasoningTrace",
+                SevaRecover::Action::"ReviewSourceDocuments",
+                SevaRecover::Action::"InspectAnonymizedPatterns"
+              ],
+              resource
+            );
+
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: sevarecover-citizens
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: false
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+      LambdaConfig:
+        DefineAuthChallenge: !GetAtt CognitoAuthTriggersFunction.Arn
+        CreateAuthChallenge: !GetAtt CognitoAuthTriggersFunction.Arn
+        VerifyAuthChallengeResponse: !GetAtt CognitoAuthTriggersFunction.Arn
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_CUSTOM_AUTH
+
+  CitizensTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: citizenId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: citizenId
+          KeyType: HASH
+
+  ApplicationsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: citizenId
+          AttributeType: S
+        - AttributeName: applicationId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: citizenId
+          KeyType: HASH
+        - AttributeName: applicationId
+          KeyType: RANGE
+
+  AuthLogsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: email
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expirationTime
+        Enabled: true
+
+  CognitoAuthTriggersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: api.auth_triggers.handler
+      Environment:
+        Variables:
+          SENDER_EMAIL: !Ref SenderEmail
+          AUTH_LOGS_TABLE: !Ref AuthLogsTable
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+              Resource: "*"
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AuthLogsTable
+
+  CognitoAuthTriggersInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref CognitoAuthTriggersFunction
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt UserPool.Arn
+
+  # Strands Agent Function Handler
+  StrandsAgentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: agent.app.lambda_handler
+      Events:
+        AnalyzeFailure:
+          Type: Api
+          Properties:
+            Path: /analyze
+            Method: post
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  SearchKnowledgeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: strands_agent.search_lambda_handler
+      Events:
+        SearchKB:
+          Type: Api
+          Properties:
+            Path: /search
+            Method: get
+
+  StatsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: agent.stats.lambda_handler
+      Events:
+        Stats:
+          Type: Api
+          Properties:
+            Path: /stats
+            Method: get
+
+  CitizenDataFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: api.handlers.handler
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:AdminInitiateAuth
+                - cognito-idp:AdminRespondToAuthChallenge
+                - cognito-idp:AdminCreateUser
+                - cognito-idp:SignUp
+                - cognito-idp:ConfirmSignUp
+              Resource: !GetAtt UserPool.Arn
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CitizensTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ApplicationsTable
+      Events:
+        Register:
+          Type: Api
+          Properties:
+            Path: /auth/register
+            Method: post
+        Confirm:
+          Type: Api
+          Properties:
+            Path: /auth/confirm
+            Method: post
+        Login:
+          Type: Api
+          Properties:
+            Path: /auth/login
+            Method: post
+        Applications:
+          Type: Api
+          Properties:
+            Path: /applications
+            Method: get
+            Auth:
+              Authorizer: CognitoAuthorizer
+        EligibleSchemes:
+          Type: Api
+          Properties:
+            Path: /schemes/eligible
+            Method: post
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+Outputs:
+  SevaRecoverApiEndpoint:
+    Description: "API Gateway endpoint URL for local environment"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"

@@ -1,0 +1,11 @@
+STATE SCHOLARSHIP PORTAL (SSP) GAZETTE NOTIFICATION 2024-25
+Department of Social Welfare & Higher Education, Government of Karnataka
+
+Section 1: Eligibility & Assessment Year Validity
+All post-matric scholarship and fee reimbursement applications submitted under SSP for Academic Year 2025-26 require a valid Revenue Income Certificate (RD Number) issued by the competent Revenue Authority (Tahsildar / Grade-2 Tahsildar) on or after 1st April 2024.
+
+Section 2: Outdated Document Rejection (Error Code: SSP-ERR-INC-402)
+Income certificates issued prior to 1st April 2024 carry statutory validity for previous assessment years only. Certificates submitted bearing dates prior to 1st April 2024 shall be automatically rejected during automated document verification under Code SSP-ERR-INC-402.
+
+Section 3: Rectification Procedure
+Applicants whose applications are rejected under Code SSP-ERR-INC-402 must obtain a fresh e-Attested Nadakacheri Income Certificate (valid for current assessment year) and perform e-attestation on the SSP student portal. A formal resubmission representation citing Section 1 & 2 must be attached before the grievance portal closing date.

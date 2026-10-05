@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sevarecover-backend
+  SAM Template for SevaRecover MVP
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+
+Resources:
+  AnalyzeFailureFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: agent/
+      Handler: app.lambda_handler
+      Runtime: python3.12
+      Architectures:
+        - x86_64
+      Events:
+        AnalyzeApi:
+          Type: Api
+          Properties:
+            Path: /analyze
+            Method: post
+
+  GetStatsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: agent/
+      Handler: stats.lambda_handler
+      Runtime: python3.12
+      Architectures:
+        - x86_64
+      Events:
+        StatsApi:
+          Type: Api
+          Properties:
+            Path: /stats
+            Method: get
+
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway endpoint URL for Prod stage"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"

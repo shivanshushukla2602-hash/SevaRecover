@@ -1,0 +1,38 @@
+[
+  {
+    "filename": "scholarship_guidelines.txt",
+    "service": "State Post-Matric Scholarship",
+    "domain": "scholarship",
+    "state": "Karnataka",
+    "department": "Department of Social Welfare",
+    "document_type": "Gazette Circular",
+    "year": 2025,
+    "effective_date": "2024-04-01",
+    "section": "Section 1-3",
+    "source": "SSP Portal Notification 2024-25"
+  },
+  {
+    "filename": "farmer_subsidy_rules.txt",
+    "service": "PM-KISAN Direct Benefit Transfer",
+    "domain": "farmer",
+    "state": "Maharashtra",
+    "department": "Department of Agriculture",
+    "document_type": "Scheme Operational Guidelines",
+    "year": 2024,
+    "effective_date": "2024-01-10",
+    "section": "Chapter III Section 8.1-8.3",
+    "source": "PM-KISAN Guidelines 2024"
+  },
+  {
+    "filename": "certificate_rules.txt",
+    "service": "E-District Family Income Certificate",
+    "domain": "certificate",
+    "state": "Uttar Pradesh",
+    "department": "Revenue Board",
+    "document_type": "Revenue Manual",
+    "year": 2024,
+    "effective_date": "2024-03-01",
+    "section": "Section 12 Clause 1-4",
+    "source": "UP Revenue Board Order 2024"
+  }
+]

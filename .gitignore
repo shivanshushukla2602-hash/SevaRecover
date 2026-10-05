@@ -1,0 +1,60 @@
+# ─── Dependencies ──────────────────────────────────────────
+node_modules/
+
+# ─── Build output ──────────────────────────────────────────
+dist/
+.dist/
+build/
+
+# ─── Environment & Secrets ─────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ─── Python ────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.venv/
+venv/
+env/
+*.egg
+
+# ─── macOS ─────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ─── IDE / Editor ──────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ─── Logs ──────────────────────────────────────────────────
+*.log
+logs/
+backend.log
+
+# ─── Scratch files ─────────────────────────────────────────
+scratch_replace.py
+scratch_replace_color.py
+progress.txt
+
+# ─── Vite cache ────────────────────────────────────────────
+.vite/
+
+# ─── AWS / Deployment ──────────────────────────────────────
+.aws/
+samconfig.toml
+*.zip
+
+# ─── Agent / GSD internal files ────────────────────────────
+.gemini/
+.agents/
+.agent/
+.gsd/

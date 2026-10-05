@@ -1,0 +1,8 @@
+UTTAR PRADESH E-DISTRICT REVENUE CERTIFICATE MANUAL
+Revenue Board, Government of Uttar Pradesh
+
+Section 12, Clause 1: Family Income Verification (Form B)
+All digital applications for Income Certificates submitted via e-District Jan Seva Kendras require a field verification report (Form B) physically or digitally signed and stamped by the jurisdictional Area Revenue Officer (Lekhpal).
+
+Section 12, Clause 4: Rejection & Resubmission Procedure
+Applications submitted with unverified agricultural income fields or missing Lekhpal verification stamps shall be marked as VERIFICATION_FAILURE or DOCUMENT_INVALID. Applicants must obtain the Lekhpal seal on Form B sheet and resubmit via Jan Seva Kendra portal within 30 days.

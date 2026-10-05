@@ -1,0 +1,11 @@
+strands-agents
+opensearch-py
+boto3
+fastapi
+uvicorn
+pypdf
+pdfplumber
+python-dotenv
+pytest
+pytest-asyncio
+requests

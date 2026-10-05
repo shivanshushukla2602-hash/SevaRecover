@@ -1,0 +1,53 @@
+# Container configuration for Finch CLI (`finch compose up`)
+services:
+  opensearch:
+    image: opensearchproject/opensearch:2.11.0
+    container_name: sevarecover-opensearch
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - DISABLE_INSTALL_DEMO_CONFIG=true
+      - DISABLE_SECURITY_PLUGIN=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9200/ >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  localstack:
+    image: localstack/localstack:latest
+    container_name: sevarecover-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=lambda,s3,opensearch,verifiedpermissions
+      - DEBUG=1
+
+  sevarecover-agent-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sevarecover-agent
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENSEARCH_HOST=http://opensearch:9200
+      - LOCALSTACK_HOST=http://localstack:4566
+    depends_on:
+      opensearch:
+        condition: service_healthy
+      localstack:
+        condition: service_started
+    command: ["sh", "-c", "python3 backend/data/index_data.py && python3 -u mock_backend.py"]
+
+volumes:
+  opensearch-data:

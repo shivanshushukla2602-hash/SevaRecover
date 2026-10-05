@@ -1,0 +1,4 @@
+strands-agents
+opensearch-py
+boto3
+cedarpolicy
